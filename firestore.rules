@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+    // Custom claims are set server-side by the setUserRole Cloud Function
+    // (see functions/auth.js) via admin.auth().setCustomUserClaims().
+    function role() {
+      return isSignedIn() ? request.auth.token.role : 'guest';
+    }
+    function isAdmin() { return role() == 'admin'; }
+
+    // users/{uid} — profile doc mirrors Firebase Auth user
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create: if isOwner(uid);
+      // Users can edit their own basic fields; only admin can change role/status
+      allow update: if isAdmin() ||
+        (isOwner(uid) &&
+         !('role' in request.resource.data.diff(resource.data).affectedKeys()) &&
+         !('status' in request.resource.data.diff(resource.data).affectedKeys()));
+      allow delete: if isAdmin();
+    }
+
+    // products/{id} — public read of approved products; admin manages all
+    match /products/{id} {
+      allow read: if resource.data.status == 'approved' || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // orders/{id} — customer can read/create their own; admin full access; seller read-only via Cloud Function aggregation
+    match /orders/{id} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin(); // status transitions go through admin/Cloud Function only
+      allow delete: if false;
+    }
+
+    // wishlist/{uid} — strictly owner-only
+    match /wishlist/{uid} {
+      allow read, write: if isOwner(uid);
+    }
+
+    // reviews/{id} — public read; only the author can write their own review; admin can moderate/delete
+    match /reviews/{id} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+    }
+  }
+}
