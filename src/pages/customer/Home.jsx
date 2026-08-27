@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiArrowRight, FiTruck, FiShield, FiZap, FiShoppingBag, FiStar, FiGrid, FiFeather } from 'react-icons/fi';
+import { FiArrowRight, FiTruck, FiShield, FiStar, FiGrid, FiZap } from 'react-icons/fi';
 import { listProducts } from '../../services/productService';
 import { getSiteContent, DEFAULT_SITE_CONTENT, buildProductWhatsAppLink } from '../../services/siteContentService';
 import ProductGrid from '../../components/product/ProductGrid';
@@ -8,9 +8,6 @@ import Loader from '../../components/common/Loader';
 
 const CATEGORY_SHORTCUTS = [
   { label: 'All Products', icon: FiGrid, to: '/products' },
-  { label: 'Whey Protein', icon: FiZap, to: '/products?category=protein' },
-  { label: 'Protein Oats', icon: FiFeather, to: '/products?category=oats' },
-  { label: 'Accessories', icon: FiShoppingBag, to: '/products?category=accessories' },
 ];
 
 export default function Home() {
@@ -63,7 +60,7 @@ export default function Home() {
       {/* Dynamic Main Website Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-brand-black via-brand-surface to-brand-charcoal border border-brand-border p-8 md:p-12 grid lg:grid-cols-2 gap-8 items-center shadow-card">
-          <div className="space-y-4 z-10">
+          <div className="space-y-4 z-10 order-2 lg:order-1">
             <span className="inline-block px-3 py-1 rounded-full text-xs font-extrabold tracking-widest uppercase bg-brand-green-500/20 text-brand-green-500 border border-brand-green-500/30">
               {siteContent.brandTagline || 'RB_PROTEIN — ELITE NUTRITION'}
             </span>
@@ -79,7 +76,7 @@ export default function Home() {
               </Link>
             </div>
           </div>
-          <div className="relative h-64 sm:h-80 w-full rounded-2xl overflow-hidden bg-brand-charcoal border border-brand-border/60">
+          <div className="relative h-64 sm:h-80 w-full rounded-2xl overflow-hidden bg-brand-charcoal border border-brand-border/60 order-1 lg:order-2">
             <img
               src={siteContent.heroImage || '/images/rb_protein_tub.jpg'}
               alt="Website Banner"

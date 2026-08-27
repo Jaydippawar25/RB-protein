@@ -1,5 +1,5 @@
-import { jwtDecode } from 'jwt-decode';
-import { auth } from '../firebase/config';
+import { jwtDecode } from "jwt-decode";
+import { auth } from "../firebase/firebase";
 
 /**
  * RB_Protein uses Firebase Authentication as the identity provider. Firebase
@@ -36,7 +36,7 @@ export function decodeToken(token) {
 }
 
 export function getRoleFromToken(decoded) {
-  return decoded?.role || decoded?.claims?.role || 'customer';
+  return decoded?.role || decoded?.claims?.role || "customer";
 }
 
 export function isTokenExpired(decoded) {

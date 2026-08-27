@@ -1,5 +1,10 @@
-import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
-import { storage } from './config';
+import {
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
+import { storage } from "./firebase";
 
 /**
  * Uploads a file to Storage with progress callback.
@@ -10,13 +15,13 @@ export function uploadFile(path, file, onProgress) {
     const storageRef = ref(storage, path);
     const task = uploadBytesResumable(storageRef, file);
     task.on(
-      'state_changed',
+      "state_changed",
       (snap) => {
         const pct = (snap.bytesTransferred / snap.totalBytes) * 100;
         onProgress?.(pct);
       },
       reject,
-      async () => resolve(await getDownloadURL(task.snapshot.ref))
+      async () => resolve(await getDownloadURL(task.snapshot.ref)),
     );
   });
 }

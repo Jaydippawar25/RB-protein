@@ -1,23 +1,41 @@
 import {
-  collection, doc, addDoc, setDoc, getDoc, getDocs, updateDoc, deleteDoc,
-  query, where, orderBy, limit, startAfter, onSnapshot, serverTimestamp,
-} from 'firebase/firestore';
-import { db } from './config';
+  collection,
+  doc,
+  addDoc,
+  setDoc,
+  getDoc,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
+  orderBy,
+  limit,
+  startAfter,
+  onSnapshot,
+  serverTimestamp,
+} from "firebase/firestore";
+import { db } from "./firebase";
 
 /** Helper to prevent long network hangs when Firebase SDK tries to connect */
 function withTimeout(promise, ms = 1500) {
   return Promise.race([
     promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), ms)),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Firestore timeout")), ms),
+    ),
   ]);
 }
 
 /** Generic paginated query builder used by product/order/review services. */
-export async function queryCollection(colName, { filters = [], sort, pageSize = 20, cursor } = {}) {
+export async function queryCollection(
+  colName,
+  { filters = [], sort, pageSize = 20, cursor } = {},
+) {
   let q = collection(db, colName);
   const clauses = filters.map((f) => where(f.field, f.op, f.value));
   const parts = [...clauses];
-  if (sort) parts.push(orderBy(sort.field, sort.dir || 'asc'));
+  if (sort) parts.push(orderBy(sort.field, sort.dir || "asc"));
   if (cursor) parts.push(startAfter(cursor));
   parts.push(limit(pageSize));
   q = query(q, ...parts);
@@ -34,7 +52,11 @@ export async function getDocument(colName, id) {
 }
 
 export async function createDocument(colName, data, id) {
-  const payload = { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
+  const payload = {
+    ...data,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
   if (id) {
     await setDoc(doc(db, colName, id), payload);
     return id;
@@ -44,7 +66,10 @@ export async function createDocument(colName, data, id) {
 }
 
 export async function updateDocument(colName, id, data) {
-  await updateDoc(doc(db, colName, id), { ...data, updatedAt: serverTimestamp() });
+  await updateDoc(doc(db, colName, id), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
 }
 
 export async function deleteDocument(colName, id) {

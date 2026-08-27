@@ -7,34 +7,38 @@ import {
   sendPasswordResetEmail,
   GoogleAuthProvider,
   signInWithPopup,
-} from 'firebase/auth';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from './config';
+} from "firebase/auth";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "./firebase";
 
 /**
  * Ensures user profile document exists in Firestore `users/{uid}` collection.
  */
 export async function ensureUserDoc(user, extraData = {}) {
   if (!user) return;
-  const ref = doc(db, 'users', user.uid);
+  const ref = doc(db, "users", user.uid);
   try {
     const snap = await getDoc(ref);
     if (!snap.exists()) {
       await setDoc(ref, {
         uid: user.uid,
-        name: extraData.name || user.displayName || user.email?.split('@')[0] || 'User',
-        email: user.email || extraData.email || '',
-        role: extraData.role || 'customer',
-        status: 'active',
-        photoURL: user.photoURL || '',
-        phone: extraData.phone || '',
+        name:
+          extraData.name ||
+          user.displayName ||
+          user.email?.split("@")[0] ||
+          "User",
+        email: user.email || extraData.email || "",
+        role: extraData.role || "customer",
+        status: "active",
+        photoURL: user.photoURL || "",
+        phone: extraData.phone || "",
         addresses: [],
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
     }
   } catch (err) {
-    console.error('Firestore ensureUserDoc error:', err);
+    console.error("Firestore ensureUserDoc error:", err);
     throw err;
   }
 }
@@ -43,12 +47,17 @@ export async function ensureUserDoc(user, extraData = {}) {
  * Registers a new user account in Firebase Auth and creates
  * profile document in the `users` Firestore collection.
  */
-export async function registerUser({ name, email, password, role = 'customer' }) {
+export async function registerUser({
+  name,
+  email,
+  password,
+  role = "customer",
+}) {
   const cred = await createUserWithEmailAndPassword(auth, email, password);
   try {
     await updateProfile(cred.user, { displayName: name });
   } catch (e) {
-    console.warn('updateProfile warning:', e.message);
+    console.warn("updateProfile warning:", e.message);
   }
 
   await ensureUserDoc(cred.user, { name, email, role });
@@ -60,7 +69,7 @@ export async function loginUser(email, password) {
   try {
     await ensureUserDoc(cred.user);
   } catch (err) {
-    console.warn('Login user doc sync warning:', err.message);
+    console.warn("Login user doc sync warning:", err.message);
   }
   return cred.user;
 }
@@ -71,7 +80,7 @@ export async function loginWithGoogle() {
   try {
     await ensureUserDoc(cred.user);
   } catch (err) {
-    console.warn('Google login user doc sync warning:', err.message);
+    console.warn("Google login user doc sync warning:", err.message);
   }
   return cred.user;
 }
@@ -86,10 +95,10 @@ export async function resetPassword(email) {
 
 export async function fetchUserProfile(uid) {
   try {
-    const snap = await getDoc(doc(db, 'users', uid));
+    const snap = await getDoc(doc(db, "users", uid));
     return snap.exists() ? snap.data() : null;
   } catch (err) {
-    console.warn('fetchUserProfile warning:', err.message);
+    console.warn("fetchUserProfile warning:", err.message);
     return null;
   }
 }
