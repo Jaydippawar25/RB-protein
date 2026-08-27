@@ -1,7 +1,10 @@
 node_modules/
 dist/
-.env
+ 
 .vercel/
  
+.env
 .env.local
 .env.*.local
+
+src/firebase/config.js
